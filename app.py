@@ -13,8 +13,7 @@ from PIL import Image
 import io
 from datetime import datetime
 import json
-# from car_recolor import recolor_car
-
+import time
 # Configure page
 st.set_page_config(
     page_title="Car Color Studio Pro",
@@ -72,6 +71,9 @@ def save_history(original_image, recolored_image, color, settings):
     st.session_state.history.append(history_entry)
 
 def main():
+    transformed_img = Image.open("D:/Car-inpainting/assets/car_recolored.png")
+    if "transformed_image" not in st.session_state:
+        st.session_state.transformed_image = False
     # Sidebar navigation
     with st.sidebar:
         selected = option_menu(
@@ -145,7 +147,9 @@ def main():
 
             if uploaded_file:
                 image = Image.open(uploaded_file)
-                st.image(image, caption="Original Image", use_column_width=True)
+                st.image(image, caption="Original Image", use_container_width=True)
+
+            
 
         with col2:
             # Advanced color selection
@@ -218,7 +222,9 @@ def main():
             if st.button("Transform Color", use_container_width=True):
                 if uploaded_file:
                     with st.spinner("Processing your image..."):
-                        # Your processing code here
+                        time.sleep(40) # Simulating the processing time
+                        with col1:
+                            st.image(transformed_img, caption="Transformed Image", use_container_width=True)
                         st.success("Transformation complete!")
                 else:
                     st.warning("Please upload an image first")
