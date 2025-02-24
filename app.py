@@ -5,9 +5,14 @@ from streamlit_extras.add_vertical_space import add_vertical_space
 from streamlit_card import card
 from PIL import Image
 from datetime import datetime
+<<<<<<< HEAD
 from car_recolor_service import CarRecolorService
 import io
 
+=======
+import json
+import time
+>>>>>>> e5b6746e0edd00d1897de3f2e7892d5640775796
 # Configure page
 st.set_page_config(
     page_title="Car Color Studio",
@@ -71,6 +76,9 @@ def save_history(original_image, recolored_image, color, settings):
     st.session_state.history.append(history_entry)
 
 def main():
+    transformed_img = Image.open("D:/Car-inpainting/assets/car_recolored.png")
+    if "transformed_image" not in st.session_state:
+        st.session_state.transformed_image = False
     # Sidebar navigation
     with st.sidebar:
         selected = option_menu(
@@ -142,6 +150,7 @@ def main():
                 help="Drag and drop or click to upload"
             )
 
+<<<<<<< HEAD
         if uploaded_file is not None:
             # Check if this is a new file
             file_bytes = uploaded_file.getvalue()
@@ -157,6 +166,12 @@ def main():
             status = st.session_state.recolor_service.get_processing_status()
             if not status['analysis_complete']:
                 st.info("Processing image... Please wait.")
+=======
+            if uploaded_file:
+                image = Image.open(uploaded_file)
+                st.image(image, caption="Original Image", use_container_width=True)
+
+>>>>>>> e5b6746e0edd00d1897de3f2e7892d5640775796
             
 
         with col2:
@@ -227,6 +242,7 @@ def main():
             #         )
 
             # Process button
+<<<<<<< HEAD
         if st.button("Transform Color", use_container_width=True):
             if uploaded_file:
                 # Convert the selected color to BGR format
@@ -242,6 +258,14 @@ def main():
                     
                     if result['success']:
                         st.session_state.recolored_image = None
+=======
+            if st.button("Transform Color", use_container_width=True):
+                if uploaded_file:
+                    with st.spinner("Processing your image..."):
+                        time.sleep(40) # Simulating the processing time
+                        with col1:
+                            st.image(transformed_img, caption="Transformed Image", use_container_width=True)
+>>>>>>> e5b6746e0edd00d1897de3f2e7892d5640775796
                         st.success("Transformation complete!")
                         # Display the recolored image
                         recolored_image = Image.open(result['image_path'])

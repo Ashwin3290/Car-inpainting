@@ -1,0 +1,155 @@
+[
+    {
+        "label": "streamlit",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "streamlit",
+        "description": "streamlit",
+        "detail": "streamlit",
+        "documentation": {}
+    },
+    {
+        "label": "option_menu",
+        "importPath": "streamlit_option_menu",
+        "description": "streamlit_option_menu",
+        "isExtraImport": true,
+        "detail": "streamlit_option_menu",
+        "documentation": {}
+    },
+    {
+        "label": "colored_header",
+        "importPath": "streamlit_extras.colored_header",
+        "description": "streamlit_extras.colored_header",
+        "isExtraImport": true,
+        "detail": "streamlit_extras.colored_header",
+        "documentation": {}
+    },
+    {
+        "label": "add_vertical_space",
+        "importPath": "streamlit_extras.add_vertical_space",
+        "description": "streamlit_extras.add_vertical_space",
+        "isExtraImport": true,
+        "detail": "streamlit_extras.add_vertical_space",
+        "documentation": {}
+    },
+    {
+        "label": "switch_page",
+        "importPath": "streamlit_extras.switch_page_button",
+        "description": "streamlit_extras.switch_page_button",
+        "isExtraImport": true,
+        "detail": "streamlit_extras.switch_page_button",
+        "documentation": {}
+    },
+    {
+        "label": "card",
+        "importPath": "streamlit_card",
+        "description": "streamlit_card",
+        "isExtraImport": true,
+        "detail": "streamlit_card",
+        "documentation": {}
+    },
+    {
+        "label": "image_comparison",
+        "importPath": "streamlit_image_comparison",
+        "description": "streamlit_image_comparison",
+        "isExtraImport": true,
+        "detail": "streamlit_image_comparison",
+        "documentation": {}
+    },
+    {
+        "label": "cv2",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "cv2",
+        "description": "cv2",
+        "detail": "cv2",
+        "documentation": {}
+    },
+    {
+        "label": "numpy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "numpy",
+        "description": "numpy",
+        "detail": "numpy",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "tempfile",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "tempfile",
+        "description": "tempfile",
+        "detail": "tempfile",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "io",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "io",
+        "description": "io",
+        "detail": "io",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "save_history",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def save_history(original_image, recolored_image, color, settings):\n    \"\"\"Save processing history to session state\"\"\"\n    if 'history' not in st.session_state:\n        st.session_state.history = []\n    timestamp = datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\")\n    history_entry = {\n        \"timestamp\": timestamp,\n        \"original_image\": original_image,\n        \"recolored_image\": recolored_image,\n        \"color\": color,",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def main():\n    transformed_img = Image.open(\"D:/Car-inpainting/assets/car_recolored.png\")\n    if \"transformed_image\" not in st.session_state:\n        st.session_state.transformed_image = False\n    # Sidebar navigation\n    with st.sidebar:\n        selected = option_menu(\n            menu_title=\"Navigation\",\n            options=[\"Home\", \"Color Studio\", \"History\", \"Settings\", \"Help\"],\n            icons=[\"house\", \"palette\", \"clock-history\", \"gear\", \"question-circle\"],",
+        "detail": "app",
+        "documentation": {}
+    }
+]
