@@ -2,26 +2,24 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 from streamlit_extras.colored_header import colored_header
 from streamlit_extras.add_vertical_space import add_vertical_space
-from streamlit_extras.switch_page_button import switch_page
 from streamlit_card import card
-from streamlit_image_comparison import image_comparison
-import cv2
-import numpy as np
-from pathlib import Path
-import tempfile
 from PIL import Image
-import io
 from datetime import datetime
-import json
-# from car_recolor import recolor_car
+from car_recolor_service import CarRecolorService
+import io
 
 # Configure page
 st.set_page_config(
-    page_title="Car Color Studio Pro",
+    page_title="Car Color Studio",
     page_icon="🚗",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+if 'recolor_service' not in st.session_state:
+    st.session_state.recolor_service = CarRecolorService(
+        base_dir="images",
+        api_url="https://da6d-34-34-25-54.ngrok-free.app/"
+    )
 
 # Custom CSS for enhanced styling
 st.markdown("""
@@ -67,7 +65,8 @@ def save_history(original_image, recolored_image, color, settings):
         "original_image": original_image,
         "recolored_image": recolored_image,
         "color": color,
-        "settings": settings
+        "settings": settings,
+        "uuid": st.session_state.current_uuid  # Add the UUID to history
     }
     st.session_state.history.append(history_entry)
 
@@ -84,19 +83,19 @@ def main():
         
         add_vertical_space(2)
         
-        # Project info in sidebar
-        st.markdown("### About")
-        st.info(
-            """
-            🚗 Car Color Studio Pro
+        # # Project info in sidebar
+        # st.markdown("### About")
+        # st.info(
+        #     """
+        #     🚗 Car Color Studio Pro
             
-            Version: 1.0.0
-            Last Updated: 2024-01-15
-            """
-        )
+        #     Version: 1.0.0
+        #     Last Updated: 2024-01-15
+        #     """
+        # )
 
     if selected == "Home":
-        st.markdown('<h1 class="main-header">Car Color Studio Pro</h1>', unsafe_allow_html=True)
+        st.markdown('<h1 class="main-header">Car Color Studio</h1>', unsafe_allow_html=True)
         
         # Feature cards using streamlit_card
         col1, col2, col3 = st.columns(3)
@@ -139,18 +138,31 @@ def main():
             # Image upload with drag and drop
             uploaded_file = st.file_uploader(
                 "Upload Car Image",
-                type=["jpg", "jpeg", "png"],
+                type=["jpg", "jpeg", "png","jiff"],
                 help="Drag and drop or click to upload"
             )
 
-            if uploaded_file:
-                image = Image.open(uploaded_file)
-                st.image(image, caption="Original Image", use_column_width=True)
+        if uploaded_file is not None:
+            # Check if this is a new file
+            file_bytes = uploaded_file.getvalue()
+            if 'current_image_hash' not in st.session_state or \
+            st.session_state.current_image_hash != hash(file_bytes):
+                # New image uploaded
+                st.session_state.current_image_hash = hash(file_bytes)
+                current_uuid = st.session_state.recolor_service.process_new_image(file_bytes,uploaded_file.name)
+                st.session_state.current_uuid = current_uuid
+            st.image(uploaded_file, caption="Original Image", use_container_width=False)
+
+            # Show processing status
+            status = st.session_state.recolor_service.get_processing_status()
+            if not status['analysis_complete']:
+                st.info("Processing image... Please wait.")
+            
 
         with col2:
             # Advanced color selection
             st.markdown("### Color Configuration")
-            
+
             color_mode = st.radio(
                 "Select Color Mode",
                 ["Preset Colors", "Custom Color", "Color Palette"]
@@ -184,44 +196,82 @@ def main():
                 st.markdown("### Generated Palette")
                 # Here you could add code to generate color palettes
 
-            # Advanced Settings in an organized expander
-            with st.expander("Advanced Settings", expanded=False):
-                settings_tabs = st.tabs(["Processing", "Effects", "Quality"])
+            # # Advanced Settings in an organized expander
+            # with st.expander("Advanced Settings", expanded=False):
+            #     settings_tabs = st.tabs(["Processing", "Effects", "Quality"])
                 
-                with settings_tabs[0]:
-                    preserve_luminance = st.toggle(
-                        "Preserve Original Luminance",
-                        value=True
-                    )
-                    reflection_threshold = st.slider(
-                        "Reflection Threshold",
-                        150, 250, 200
-                    )
+            #     with settings_tabs[0]:
+            #         preserve_luminance = st.toggle(
+            #             "Preserve Original Luminance",
+            #             value=True
+            #         )
+            #         reflection_threshold = st.slider(
+            #             "Reflection Threshold",
+            #             150, 250, 200
+            #         )
 
-                with settings_tabs[1]:
-                    gloss_level = st.slider(
-                        "Gloss Level",
-                        0, 100, 50
-                    )
-                    metallic_effect = st.slider(
-                        "Metallic Effect",
-                        0, 100, 0
-                    )
+            #     with settings_tabs[1]:
+            #         gloss_level = st.slider(
+            #             "Gloss Level",
+            #             0, 100, 50
+            #         )
+            #         metallic_effect = st.slider(
+            #             "Metallic Effect",
+            #             0, 100, 0
+            #         )
 
-                with settings_tabs[2]:
-                    output_quality = st.select_slider(
-                        "Output Quality",
-                        options=["Draft", "Standard", "High", "Ultra"]
-                    )
+            #     with settings_tabs[2]:
+            #         output_quality = st.select_slider(
+            #             "Output Quality",
+            #             options=["Draft", "Standard", "High", "Ultra"]
+            #         )
 
             # Process button
-            if st.button("Transform Color", use_container_width=True):
-                if uploaded_file:
-                    with st.spinner("Processing your image..."):
-                        # Your processing code here
+        if st.button("Transform Color", use_container_width=True):
+            if uploaded_file:
+                # Convert the selected color to BGR format
+                # This example assumes selected_color is in hex format (#RRGGBB)
+                color = selected_color.lstrip('#')
+                rgb = tuple(int(color[i:i+2], 16) for i in (0, 2, 4))
+                
+                with st.spinner("Transforming color..."):
+                    result = st.session_state.recolor_service.recolor_current_image(
+                        target_color=rgb,
+                        wait_timeout=90,
+                    )
+                    
+                    if result['success']:
+                        st.session_state.recolored_image = None
                         st.success("Transformation complete!")
+                        # Display the recolored image
+                        recolored_image = Image.open(result['image_path'])
+                        st.session_state.recolored_image = recolored_image
+
+            if 'recolored_image' in st.session_state:
+                if st.session_state.recolored_image:
+                    st.image(st.session_state.recolored_image , caption="Recolored Image", use_container_width=False)
+                    # if st.button("Download", use_container_width=True):
+                    #     recolored_image.save(f"{uploaded_file.name}_recolored.png")
+                    #     with open("recolored_image.png", "rb") as file:
+                    #         st.download_button(file,f"{uploaded_file.name}_recolored.png", "Download Recolored Image")
+                            
+                            # Save to history
+                    save_history(
+                        original_image=uploaded_file,
+                        recolored_image=recolored_image,
+                        color=selected_color,
+                        settings={
+                        #     'preserve_luminance': preserve_luminance,
+                        #     'reflection_threshold': reflection_threshold,
+                        #     'gloss_level': gloss_level,
+                        #     'metallic_effect': metallic_effect,
+                        #     'output_quality': output_quality
+                        }
+                    )
                 else:
-                    st.warning("Please upload an image first")
+                    st.error(f"Error: {result['message']}")
+            else:
+                st.warning("Please upload an image first")
 
     elif selected == "History":
         colored_header(
@@ -238,11 +288,21 @@ def main():
                         st.image(entry["original_image"], caption="Original")
                     with col2:
                         st.image(entry["recolored_image"], caption="Recolored")
+                        # Convert PIL Image to bytes for download
+                        img_bytes = io.BytesIO()
+                        entry["recolored_image"].save(img_bytes, format='PNG')
+                        
+                        st.download_button(
+                            label="Download Recolored Image",
+                            data=img_bytes.getvalue(),
+                            file_name="recolored_image.png",
+                            mime="image/png",
+                            key=f"download_{entry['timestamp']}"
+                        )
                     st.markdown(f"**Processed at:** {entry['timestamp']}")
                     st.divider()
         else:
-            st.info("No processing history available yet")
-
+            st.info("No processing history available yet")    
     elif selected == "Settings":
         colored_header(
             label="Settings",
