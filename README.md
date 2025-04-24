@@ -2,7 +2,7 @@
 
 A professional-grade application for virtually recoloring car images with AI-powered precision.
 
-![Car Recolor Sample](assets/image)
+![Car Recolor Sample](assets/image.jpg)
 
 ##  Features
 
